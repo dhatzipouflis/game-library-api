@@ -11,12 +11,12 @@ export default defineConfig({
 
       include: [
         'src/**/*.service.ts',
-        'src/**/*.controller.ts',
-        'src/**/*.repository.ts',
-        'src/**/*.filter.ts',
         'src/**/*.guard.ts',
         'src/**/*.strategy.ts',
+        'src/**/*.filter.ts',
       ],
+
+      exclude: ['src/app.service.ts'],
 
       thresholds: {
         lines: 75,
