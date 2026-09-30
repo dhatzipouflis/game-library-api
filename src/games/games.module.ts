@@ -6,9 +6,10 @@ import { GamesController } from './games.controller.js';
 import { GamesService } from './games.service.js';
 import { GamesRepository } from './repositories/games.repository.js';
 import { GAMES_REPOSITORY } from './repositories/games.repository.interface.js';
+import { AuthModule } from '../auth/auth.module.js';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Game])],
+  imports: [TypeOrmModule.forFeature([Game]), AuthModule],
   controllers: [GamesController],
   providers: [
     GamesService,
