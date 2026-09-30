@@ -9,6 +9,15 @@ export default defineConfig({
 
       reportOnFailure: true,
 
+      include: [
+        'src/**/*.service.ts',
+        'src/**/*.controller.ts',
+        'src/**/*.repository.ts',
+        'src/**/*.filter.ts',
+        'src/**/*.guard.ts',
+        'src/**/*.strategy.ts',
+      ],
+
       thresholds: {
         lines: 75,
         functions: 75,
