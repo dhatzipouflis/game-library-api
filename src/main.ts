@@ -20,7 +20,9 @@ async function bootstrap() {
     .setTitle('Game Library API')
     .setDescription('REST API for managing a personal game library.')
     .setVersion('1.0')
+    .addBearerAuth()
     .addTag('Games')
+    .addTag('Auth')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);

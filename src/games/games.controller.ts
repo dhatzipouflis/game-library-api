@@ -8,10 +8,12 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -27,9 +29,11 @@ import { UpdateGameDto } from './dto/update-game.dto.js';
 import { GameResponseDto } from './dto/game-response.dto.js';
 import { DeleteGameResponseDto } from './dto/delete-game-response.dto.js';
 import { FindGamesQueryDto } from './dto/find-games-query.dto.js';
-import { get } from 'http';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 
 @ApiTags('Games')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('games')
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
