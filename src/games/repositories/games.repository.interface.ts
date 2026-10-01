@@ -1,14 +1,9 @@
-import { FindGamesQueryDto } from '../dto/find-games-query.dto.js';
+import type { CreateGameDto } from '../dto/create-game.dto.js';
 import type { Game } from '../entities/game.entity.js';
 
 export const GAMES_REPOSITORY = Symbol('GAMES_REPOSITORY');
 
 export interface GamesRepositoryContract {
-  search(query: FindGamesQueryDto): Promise<{
-    data: Game[];
-    total: number;
-  }>;
-
   findAll(): Promise<{
     data: Game[];
     total: number;
@@ -16,7 +11,7 @@ export interface GamesRepositoryContract {
 
   findById(id: number): Promise<Game | null>;
 
-  create(data: { title: string; genre: string }): Promise<Game>;
+  create(data: CreateGameDto): Promise<Game>;
 
   save(game: Game): Promise<Game>;
 

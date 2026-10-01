@@ -10,7 +10,9 @@ import { AuthModule } from '../auth/auth.module.js';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Game]), AuthModule],
+
   controllers: [GamesController],
+
   providers: [
     GamesService,
     {
@@ -18,5 +20,7 @@ import { AuthModule } from '../auth/auth.module.js';
       useClass: GamesRepository,
     },
   ],
+
+  exports: [GamesService],
 })
 export class GamesModule {}

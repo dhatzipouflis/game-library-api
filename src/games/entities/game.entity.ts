@@ -8,17 +8,25 @@ import {
 @Entity()
 export class Game {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
-  @Column()
-  title: string;
+  @Column({
+    unique: true,
+    length: 150,
+  })
+  title!: string;
 
-  @Column()
-  genre: string;
+  @Column({
+    length: 50,
+  })
+  genre!: string;
 
-  @Column({ nullable: true })
+  @Column({
+    nullable: true,
+    length: 50,
+  })
   platform?: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 }

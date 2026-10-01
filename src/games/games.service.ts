@@ -1,13 +1,12 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
+import { CreateGameDto } from './dto/create-game.dto.js';
+import { UpdateGameDto } from './dto/update-game.dto.js';
+
 import {
   GAMES_REPOSITORY,
   type GamesRepositoryContract,
 } from './repositories/games.repository.interface.js';
-
-import { CreateGameDto } from './dto/create-game.dto.js';
-import { UpdateGameDto } from './dto/update-game.dto.js';
-import { FindGamesQueryDto } from './dto/find-games-query.dto.js';
 
 @Injectable()
 export class GamesService {
@@ -16,30 +15,13 @@ export class GamesService {
     private readonly gamesRepository: GamesRepositoryContract,
   ) {}
 
-  async search(query: FindGamesQueryDto) {
-    const { data, total } = await this.gamesRepository.search(query);
-
-    return {
-      data,
-      meta: {
-        page: query.page,
-        pageSize: query.pageSize,
-        total,
-        totalPages: Math.ceil(total / query.pageSize),
-      },
-    };
-  }
-
   async findAll() {
     const { data, total } = await this.gamesRepository.findAll();
 
     return {
       data,
       meta: {
-        page: 1,
-        pageSize: 10,
         total,
-        totalPages: Math.ceil(total / 10),
       },
     };
   }
@@ -54,14 +36,14 @@ export class GamesService {
     return game;
   }
 
-  async create(createGameDto: CreateGameDto) {
-    return await this.gamesRepository.create(createGameDto);
+  create(dto: CreateGameDto) {
+    return this.gamesRepository.create(dto);
   }
 
-  async update(id: number, updateGameDto: UpdateGameDto) {
+  async update(id: number, dto: UpdateGameDto) {
     const game = await this.findOne(id);
 
-    Object.assign(game, updateGameDto);
+    Object.assign(game, dto);
 
     return this.gamesRepository.save(game);
   }
