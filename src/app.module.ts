@@ -5,6 +5,7 @@ import { GamesModule } from './games/games.module.js';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
 import { AuthModule } from './auth/auth.module.js';
+import { UserGamesModule } from './user-games/user-games.module.js';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { AuthModule } from './auth/auth.module.js';
 
     GamesModule,
     AuthModule,
+    UserGamesModule,
   ],
   providers: [
     {

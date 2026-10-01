@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { UserRole } from '../src/users/enums/user-role.enum.js';
+
 import { UsersService } from '../src/users/users.service.js';
 
 import {
@@ -36,12 +38,13 @@ describe('UsersService', () => {
     service = module.get<UsersService>(UsersService);
   });
 
-  it('should find a user by email', async () => {
+  it('should find user by email', async () => {
     const user = {
       id: 1,
       username: 'qrowley',
       email: 'user@example.com',
       passwordHash: 'hash',
+      role: UserRole.USER,
       createdAt: new Date(),
     };
 
@@ -56,12 +59,13 @@ describe('UsersService', () => {
     );
   });
 
-  it('should find a user by username', async () => {
+  it('should find user by username', async () => {
     const user = {
       id: 1,
       username: 'qrowley',
       email: 'user@example.com',
       passwordHash: 'hash',
+      role: UserRole.USER,
       createdAt: new Date(),
     };
 
@@ -75,19 +79,20 @@ describe('UsersService', () => {
   });
 
   it('should create a user', async () => {
-    const createdUser = {
+    const user = {
       id: 1,
       username: 'qrowley',
       email: 'user@example.com',
       passwordHash: 'hash',
+      role: UserRole.USER,
       createdAt: new Date(),
     };
 
-    usersRepositoryMock.create.mockResolvedValue(createdUser);
+    usersRepositoryMock.create.mockResolvedValue(user);
 
     const result = await service.create('qrowley', 'user@example.com', 'hash');
 
-    expect(result).toEqual(createdUser);
+    expect(result).toEqual(user);
 
     expect(usersRepositoryMock.create).toHaveBeenCalledWith({
       username: 'qrowley',

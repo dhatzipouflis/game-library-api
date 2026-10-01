@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { DataSource } from 'typeorm';
 
 import { Game } from '../games/entities/game.entity.js';
+import { UserGame } from '../user-games/entities/user-game.entity.js';
 import { User } from '../users/entities/user.entity.js';
 
 export default new DataSource({
@@ -14,7 +15,7 @@ export default new DataSource({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
 
-  entities: [Game, User],
+  entities: [Game, User, UserGame],
 
   migrations: ['src/database/migrations/*.ts'],
 

@@ -7,7 +7,6 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 
@@ -15,21 +14,28 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
-import { GamesService } from './games.service.js';
+import { Roles } from '../auth/decorators/roles.decorator.js';
+
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { RolesGuard } from '../auth/guards/roles.guard.js';
+
+import { UserRole } from '../users/enums/user-role.enum.js';
 
 import { CreateGameDto } from './dto/create-game.dto.js';
-import { UpdateGameDto } from './dto/update-game.dto.js';
-import { GameResponseDto } from './dto/game-response.dto.js';
 import { DeleteGameResponseDto } from './dto/delete-game-response.dto.js';
-import { FindGamesQueryDto } from './dto/find-games-query.dto.js';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+import { GameResponseDto } from './dto/game-response.dto.js';
+import { UpdateGameDto } from './dto/update-game.dto.js';
+
+import { GamesService } from './games.service.js';
 
 @ApiTags('Games')
 @ApiBearerAuth()
@@ -40,22 +46,11 @@ export class GamesController {
 
   @Get()
   @ApiOperation({
-    summary: 'Search games',
-    description:
-      'Returns paginated games with optional genre filtering and title search.',
-  })
-  search(@Query() query: FindGamesQueryDto) {
-    return this.gamesService.search(query);
-  }
-
-  @Get('all')
-  @ApiOperation({
-    summary: 'Get all games',
-    description: 'Returns a paginated list of all games.',
+    summary: 'Get game catalog',
   })
   @ApiOkResponse({
-    description: 'Games retrieved successfully.',
-    type: [GameResponseDto],
+    type: GameResponseDto,
+    isArray: true,
   })
   findAll() {
     return this.gamesService.findAll();
@@ -63,96 +58,95 @@ export class GamesController {
 
   @Get(':id')
   @ApiOperation({
-    summary: 'Get game by id',
-    description: 'Returns a single game using its unique identifier.',
+    summary: 'Get catalog game by id',
   })
   @ApiParam({
     name: 'id',
     type: Number,
     example: 1,
-    description: 'Game identifier',
   })
   @ApiOkResponse({
-    description: 'Game retrieved successfully.',
     type: GameResponseDto,
   })
-  @ApiBadRequestResponse({
-    description: 'The supplied id is not a valid number.',
-  })
   @ApiNotFoundResponse({
-    description: 'Game was not found.',
+    description: 'Game not found',
   })
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(
+    @Param('id', ParseIntPipe)
+    id: number,
+  ) {
     return this.gamesService.findOne(id);
   }
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiOperation({
-    summary: 'Create a game',
-    description: 'Adds a new game to the library.',
+    summary: 'Create catalog game - admin only',
   })
   @ApiCreatedResponse({
-    description: 'Game created successfully.',
     type: GameResponseDto,
   })
-  @ApiBadRequestResponse({
-    description: 'Invalid request body.',
+  @ApiForbiddenResponse({
+    description: 'Admin role required',
   })
-  create(@Body() createGameDto: CreateGameDto) {
-    return this.gamesService.create(createGameDto);
+  @ApiUnauthorizedResponse({
+    description: 'Authentication required',
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid request body',
+  })
+  create(
+    @Body()
+    dto: CreateGameDto,
+  ) {
+    return this.gamesService.create(dto);
   }
 
   @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiOperation({
-    summary: 'Update a game',
-    description:
-      'Partially updates an existing game. Only supplied properties are changed.',
-  })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    example: 1,
-    description: 'Game identifier',
+    summary: 'Update catalog game - admin only',
   })
   @ApiOkResponse({
-    description: 'Game updated successfully.',
     type: GameResponseDto,
   })
-  @ApiBadRequestResponse({
-    description: 'Invalid id or request body.',
+  @ApiForbiddenResponse({
+    description: 'Admin role required',
   })
   @ApiNotFoundResponse({
-    description: 'Game was not found.',
+    description: 'Game not found',
   })
   update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateGameDto: UpdateGameDto,
+    @Param('id', ParseIntPipe)
+    id: number,
+
+    @Body()
+    dto: UpdateGameDto,
   ) {
-    return this.gamesService.update(id, updateGameDto);
+    return this.gamesService.update(id, dto);
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   @ApiOperation({
-    summary: 'Delete a game',
-    description: 'Removes a game from the library.',
-  })
-  @ApiParam({
-    name: 'id',
-    type: Number,
-    example: 1,
-    description: 'Game identifier',
+    summary: 'Delete catalog game - admin only',
   })
   @ApiOkResponse({
-    description: 'Game deleted successfully.',
     type: DeleteGameResponseDto,
   })
-  @ApiBadRequestResponse({
-    description: 'The supplied id is not a valid number.',
+  @ApiForbiddenResponse({
+    description: 'Admin role required',
   })
   @ApiNotFoundResponse({
-    description: 'Game was not found.',
+    description: 'Game not found',
   })
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(
+    @Param('id', ParseIntPipe)
+    id: number,
+  ) {
     return this.gamesService.remove(id);
   }
 }
