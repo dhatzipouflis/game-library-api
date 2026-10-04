@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 
 import { Test, TestingModule } from '@nestjs/testing';
 
@@ -19,7 +19,11 @@ describe('GamesService', () => {
 
     findById: vi.fn<GamesRepositoryContract['findById']>(),
 
+    findByRawgId: vi.fn<GamesRepositoryContract['findByRawgId']>(),
+
     create: vi.fn<GamesRepositoryContract['create']>(),
+
+    createFromExternal: vi.fn<GamesRepositoryContract['createFromExternal']>(),
 
     save: vi.fn<GamesRepositoryContract['save']>(),
 
@@ -184,6 +188,73 @@ describe('GamesService', () => {
 
     expect(result).toEqual({
       message: 'Game with id 1 deleted successfully',
+    });
+  });
+
+  describe('importFromRawg', () => {
+    it('should import a RAWG game when it does not already exist', async () => {
+      const externalGame = {
+        rawgId: 326243,
+        title: 'Elden Ring',
+        genre: 'Action',
+        platform: 'PC',
+
+        imageUrl: 'https://example.com/elden-ring.jpg',
+
+        releasedAt: new Date('2022-02-25'),
+
+        metacritic: 96,
+      };
+
+      const createdGame = {
+        id: 10,
+        ...externalGame,
+        createdAt: new Date(),
+      };
+
+      gamesRepositoryMock.findByRawgId.mockResolvedValue(null);
+
+      gamesRepositoryMock.createFromExternal.mockResolvedValue(createdGame);
+
+      const result = await service.importFromRawg(externalGame);
+
+      expect(gamesRepositoryMock.findByRawgId).toHaveBeenCalledWith(326243);
+
+      expect(gamesRepositoryMock.createFromExternal).toHaveBeenCalledWith(
+        externalGame,
+      );
+
+      expect(result).toEqual(createdGame);
+    });
+
+    it('should throw ConflictException when RAWG game has already been imported', async () => {
+      gamesRepositoryMock.findByRawgId.mockResolvedValue({
+        id: 10,
+        rawgId: 326243,
+        title: 'Elden Ring',
+        genre: 'Action',
+        platform: 'PC',
+
+        imageUrl: 'https://example.com/elden-ring.jpg',
+
+        releasedAt: new Date('2022-02-25'),
+
+        metacritic: 96,
+        createdAt: new Date(),
+      });
+
+      const externalGame = {
+        rawgId: 326243,
+        title: 'Elden Ring',
+        genre: 'Action',
+        platform: 'PC',
+      };
+
+      await expect(service.importFromRawg(externalGame)).rejects.toThrow(
+        ConflictException,
+      );
+
+      expect(gamesRepositoryMock.createFromExternal).not.toHaveBeenCalled();
     });
   });
 });
