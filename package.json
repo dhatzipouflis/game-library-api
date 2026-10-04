@@ -24,7 +24,12 @@
     "migration:run": "typeorm-ts-node-esm migration:run -d src/database/data-source.ts",
     "migration:revert": "typeorm-ts-node-esm migration:revert -d src/database/data-source.ts",
     "test": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "seed:admin": "npm run build && node dist/database/seeds/seed-admin.js",
+    "setup:local": "node scripts/setup-local.mjs"
+  },
+  "engines": {
+    "node": ">=24"
   },
   "dependencies": {
     "@nestjs/axios": "^12.0.1",

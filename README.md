@@ -11,6 +11,7 @@ The project is also a hands-on exploration of the Node.js / NestJS ecosystem, ap
 ## ✨ Features
 
 ### Authentication & Authorization
+
 - User registration and login
 - Login with username or email
 - JWT authentication
@@ -20,6 +21,7 @@ The project is also a hands-on exploration of the Node.js / NestJS ecosystem, ap
 - Admin-only catalog and integration operations
 
 ### Global Game Catalog
+
 - Authenticated users can browse the global game catalog
 - Admins can create, update, and delete games
 - TypeORM persistence with PostgreSQL
@@ -27,6 +29,7 @@ The project is also a hands-on exploration of the Node.js / NestJS ecosystem, ap
 - Repository abstraction with dependency injection tokens
 
 ### Personal Game Library
+
 - Users can add existing catalog games to their personal library
 - Users can remove games from their library
 - Explicit `UserGame` relation between users and games
@@ -34,6 +37,7 @@ The project is also a hands-on exploration of the Node.js / NestJS ecosystem, ap
 - Admin users can also maintain their own personal library
 
 ### RAWG Integration
+
 - Search games through the RAWG Video Games Database API
 - Admin-only game import
 - External RAWG responses are mapped into the application's own domain model
@@ -41,6 +45,7 @@ The project is also a hands-on exploration of the Node.js / NestJS ecosystem, ap
 - `rawgId` is stored to prevent duplicate imports
 
 ### CheapShark Integration
+
 - Search CheapShark games
 - Retrieve live game deals from multiple stores
 - Map store IDs to readable store names
@@ -49,6 +54,7 @@ The project is also a hands-on exploration of the Node.js / NestJS ecosystem, ap
 - Pricing data is fetched live instead of being persisted in the database
 
 ### Price Drop Alerts
+
 - Users can create a price alert for games in their personal library
 - Alerts store a user-defined target price
 - Scheduled background job checks active alerts every hour
@@ -60,11 +66,13 @@ The project is also a hands-on exploration of the Node.js / NestJS ecosystem, ap
 - Admins can manually trigger an alert check for testing
 
 ### Email
+
 - SMTP-based email service using Nodemailer
 - Local email testing through Mailpit
 - SMTP configuration is environment-based and can later be replaced by a real email provider
 
 ### API Quality
+
 - Swagger / OpenAPI documentation
 - DTO-based request validation
 - Global validation pipeline
@@ -74,6 +82,7 @@ The project is also a hands-on exploration of the Node.js / NestJS ecosystem, ap
 - Consistent REST-style responses
 
 ### Testing & CI
+
 - Unit testing with Vitest
 - Mocked repositories and external HTTP dependencies
 - Tests for authentication, JWT, RBAC, game catalog logic, personal libraries, RAWG, CheapShark, price alerts, scheduled monitoring, duplicate notification prevention, and email
@@ -84,25 +93,25 @@ The project is also a hands-on exploration of the Node.js / NestJS ecosystem, ap
 
 ## 🛠️ Tech Stack
 
-| Area | Technology |
-| --- | --- |
-| Runtime | Node.js |
-| Language | TypeScript |
-| Framework | NestJS |
-| Database | PostgreSQL |
-| ORM | TypeORM |
-| Authentication | JWT / Passport / bcrypt |
-| Validation | class-validator / class-transformer |
-| HTTP Integrations | `@nestjs/axios` / Axios |
-| Game Metadata | RAWG API |
-| Game Deals | CheapShark API |
-| Scheduling | `@nestjs/schedule` |
-| Email | Nodemailer |
-| Local SMTP | Mailpit |
-| API Documentation | Swagger / OpenAPI |
-| Testing | Vitest |
-| Containerization | Docker / Docker Compose |
-| CI | GitHub Actions |
+| Area              | Technology                          |
+| ----------------- | ----------------------------------- |
+| Runtime           | Node.js                             |
+| Language          | TypeScript                          |
+| Framework         | NestJS                              |
+| Database          | PostgreSQL                          |
+| ORM               | TypeORM                             |
+| Authentication    | JWT / Passport / bcrypt             |
+| Validation        | class-validator / class-transformer |
+| HTTP Integrations | `@nestjs/axios` / Axios             |
+| Game Metadata     | RAWG API                            |
+| Game Deals        | CheapShark API                      |
+| Scheduling        | `@nestjs/schedule`                  |
+| Email             | Nodemailer                          |
+| Local SMTP        | Mailpit                             |
+| API Documentation | Swagger / OpenAPI                   |
+| Testing           | Vitest                              |
+| Containerization  | Docker / Docker Compose             |
+| CI                | GitHub Actions                      |
 
 ---
 
@@ -222,14 +231,18 @@ The monitor groups alerts by game so multiple users tracking the same title do n
 ## 🔐 Roles
 
 ### USER
+
 A normal authenticated user can:
+
 - browse the global catalog
 - maintain a personal game library
 - view live CheapShark deals
 - create and manage price alerts
 
 ### ADMIN
+
 An admin can perform all normal user operations plus:
+
 - create, update, and delete catalog games
 - search and import games through RAWG
 - manually trigger the price-alert monitor
@@ -326,6 +339,23 @@ No real emails are sent when using the local Mailpit configuration.
 
 ---
 
+## 🚀 Local Development
+
+### Prerequisites
+
+Make sure the following are installed:
+
+- Node.js 24+
+- npm
+- Docker
+- Docker Compose
+- Git
+
+If you use `nvm`:
+
+````bash
+nvm use
+
 ## ⚙️ Environment Variables
 
 Example:
@@ -353,7 +383,7 @@ SMTP_HOST=localhost
 SMTP_PORT=1025
 SMTP_SECURE=false
 EMAIL_FROM=Game Library <no-reply@gamelibrary.local>
-```
+````
 
 Secrets must not be committed to Git. Use `.env.example` as the template and keep `.env` ignored.
 
@@ -415,27 +445,25 @@ Coverage thresholds are enforced to prevent untested changes from being merged.
 
 ## 💡 Backend Concepts Practiced
 
-| NestJS / Node.js | Comparable .NET concept |
-| --- | --- |
-| Controller | ASP.NET Core Controller |
-| Provider / Service | Application Service |
-| Dependency Injection | Built-in .NET DI |
-| Repository abstraction | Repository + interface |
-| Injection token | Interface/service registration |
-| TypeORM Entity | EF Core Entity |
-| TypeORM Migration | EF Core Migration |
-| ConfigService | `IConfiguration` / Options |
-| Guard | Authorization middleware / policy |
-| Exception Filter | Exception middleware/filter |
-| `HttpService` | `HttpClient` |
-| Scheduled task | Hosted/background service |
+| NestJS / Node.js       | Comparable .NET concept           |
+| ---------------------- | --------------------------------- |
+| Controller             | ASP.NET Core Controller           |
+| Provider / Service     | Application Service               |
+| Dependency Injection   | Built-in .NET DI                  |
+| Repository abstraction | Repository + interface            |
+| Injection token        | Interface/service registration    |
+| TypeORM Entity         | EF Core Entity                    |
+| TypeORM Migration      | EF Core Migration                 |
+| ConfigService          | `IConfiguration` / Options        |
+| Guard                  | Authorization middleware / policy |
+| Exception Filter       | Exception middleware/filter       |
+| `HttpService`          | `HttpClient`                      |
+| Scheduled task         | Hosted/background service         |
 
 ---
 
 ## 🛣️ Possible Future Improvements
 
-- One-command local development bootstrap
-- Seed script for a default local admin account
 - Email verification
 - Forgot/reset password flow
 - Redis caching for external API responses
