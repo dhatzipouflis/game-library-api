@@ -27,6 +27,28 @@ export class Game {
   })
   platform?: string;
 
+  @Column({
+    nullable: true,
+    unique: true,
+  })
+  rawgId?: number;
+
+  @Column({
+    nullable: true,
+  })
+  imageUrl?: string;
+
+  @Column({
+    type: 'date',
+    nullable: true,
+  })
+  releasedAt?: Date;
+
+  @Column({
+    nullable: true,
+  })
+  metacritic?: number;
+
   @CreateDateColumn()
   createdAt!: Date;
 }

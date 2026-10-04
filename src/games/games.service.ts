@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { CreateGameDto } from './dto/create-game.dto.js';
 import { UpdateGameDto } from './dto/update-game.dto.js';
@@ -7,6 +12,7 @@ import {
   GAMES_REPOSITORY,
   type GamesRepositoryContract,
 } from './repositories/games.repository.interface.js';
+import { CreateExternalGame } from './interfaces/create-external-game.interface.js';
 
 @Injectable()
 export class GamesService {
@@ -56,5 +62,15 @@ export class GamesService {
     return {
       message: `Game with id ${id} deleted successfully`,
     };
+  }
+
+  async importFromRawg(data: CreateExternalGame) {
+    const existing = await this.gamesRepository.findByRawgId(data.rawgId);
+
+    if (existing) {
+      throw new ConflictException('Game has already been imported from RAWG');
+    }
+
+    return this.gamesRepository.createFromExternal(data);
   }
 }
