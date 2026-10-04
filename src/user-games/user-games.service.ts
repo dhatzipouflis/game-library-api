@@ -58,4 +58,17 @@ export class UserGamesService {
       message: 'Game removed from your library',
     };
   }
+
+  async ensureGameInLibrary(userId: number, gameId: number) {
+    const userGame = await this.userGamesRepository.findByUserAndGame(
+      userId,
+      gameId,
+    );
+
+    if (!userGame) {
+      throw new NotFoundException('Game was not found in your library');
+    }
+
+    return userGame;
+  }
 }

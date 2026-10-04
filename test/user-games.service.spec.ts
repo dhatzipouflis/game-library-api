@@ -179,4 +179,36 @@ describe('UserGamesService', () => {
 
     expect(userGamesRepositoryMock.remove).not.toHaveBeenCalled();
   });
+
+  describe('ensureGameInLibrary', () => {
+    it('should return user game when game exists in library', async () => {
+      const userGame = {
+        id: 1,
+        userId: 10,
+        gameId: 5,
+        addedAt: new Date(),
+      };
+
+      userGamesRepositoryMock.findByUserAndGame.mockResolvedValue(
+        userGame as never,
+      );
+
+      const result = await service.ensureGameInLibrary(10, 5);
+
+      expect(userGamesRepositoryMock.findByUserAndGame).toHaveBeenCalledWith(
+        10,
+        5,
+      );
+
+      expect(result).toEqual(userGame);
+    });
+
+    it('should throw when game is not in user library', async () => {
+      userGamesRepositoryMock.findByUserAndGame.mockResolvedValue(null);
+
+      await expect(service.ensureGameInLibrary(10, 5)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
 });
