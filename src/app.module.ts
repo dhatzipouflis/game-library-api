@@ -7,6 +7,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
 import { AuthModule } from './auth/auth.module.js';
 import { UserGamesModule } from './user-games/user-games.module.js';
 import { RawgModule } from './integrations/rawg/rawg.module.js';
+import { CheapSharkModule } from './integrations/cheapshark/cheapshark.module.js';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { RawgModule } from './integrations/rawg/rawg.module.js';
     AuthModule,
     UserGamesModule,
     RawgModule,
+    CheapSharkModule,
   ],
   providers: [
     {
