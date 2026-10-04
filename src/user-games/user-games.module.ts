@@ -29,5 +29,6 @@ import { UserGamesService } from './user-games.service.js';
       useClass: UserGamesRepository,
     },
   ],
+  exports: [UserGamesService],
 })
 export class UserGamesModule {}

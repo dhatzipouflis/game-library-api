@@ -39,5 +39,6 @@ import { GameDealsService } from './game-deals.service.js';
   controllers: [CheapSharkController, GameDealsController],
 
   providers: [CheapSharkService, GameDealsService],
+  exports: [GameDealsService],
 })
 export class CheapSharkModule {}

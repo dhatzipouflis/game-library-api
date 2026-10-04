@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module.js';
 import { UserGamesModule } from './user-games/user-games.module.js';
 import { RawgModule } from './integrations/rawg/rawg.module.js';
 import { CheapSharkModule } from './integrations/cheapshark/cheapshark.module.js';
+import { PriceAlertsModule } from './price-alerts/price-alerts.module.js';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -33,11 +35,14 @@ import { CheapSharkModule } from './integrations/cheapshark/cheapshark.module.js
       }),
     }),
 
+    ScheduleModule.forRoot(),
+
     GamesModule,
     AuthModule,
     UserGamesModule,
     RawgModule,
     CheapSharkModule,
+    PriceAlertsModule,
   ],
   providers: [
     {
