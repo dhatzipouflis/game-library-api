@@ -163,6 +163,20 @@ For local development, Mailpit provides a safe local SMTP server and browser inb
 
 The email service also supports optional SMTP username/password credentials for a real SMTP provider.
 
+### 🩺 Health Checks
+
+The public `GET /health` endpoint checks PostgreSQL and Redis availability.
+
+- PostgreSQL and Redis available: HTTP `200`, status `ok`.
+- Redis unavailable: HTTP `200`, status `degraded`.
+- PostgreSQL unavailable: HTTP `503`.
+
+Redis is treated as an optional dependency, so its failure does not
+mark the entire API as unavailable.
+
+Both checks use a one-second timeout. The PostgreSQL health-check
+result is cached for five seconds.
+
 ### ✅ Validation & Error Handling
 
 The API uses a global `ValidationPipe` with:
@@ -188,29 +202,29 @@ Unexpected exceptions are logged and exposed as a generic `500 Internal server e
 
 ## 🛠️ Tech Stack
 
-| Area | Technology |
-| --- | --- |
-| Runtime | Node.js 24+ |
-| Language | TypeScript 6 |
-| Framework | NestJS 12 |
-| Database | PostgreSQL 17 |
-| ORM | TypeORM |
-| Authentication | JWT / Passport |
-| Password hashing | bcrypt |
-| Validation | class-validator / class-transformer |
-| HTTP integrations | `@nestjs/axios` / Axios |
-| Game metadata | RAWG API |
-| Game deals | CheapShark API |
-| Scheduling | `@nestjs/schedule` |
-| Email | Nodemailer |
-| Local SMTP | Mailpit |
-| API documentation | Swagger / OpenAPI |
-| Testing | Vitest |
-| Coverage | V8 |
-| Linting | Oxlint |
-| Formatting | Prettier |
-| Containerization | Docker / Docker Compose |
-| CI | GitHub Actions |
+| Area              | Technology                          |
+| ----------------- | ----------------------------------- |
+| Runtime           | Node.js 24+                         |
+| Language          | TypeScript 6                        |
+| Framework         | NestJS 12                           |
+| Database          | PostgreSQL 17                       |
+| ORM               | TypeORM                             |
+| Authentication    | JWT / Passport                      |
+| Password hashing  | bcrypt                              |
+| Validation        | class-validator / class-transformer |
+| HTTP integrations | `@nestjs/axios` / Axios             |
+| Game metadata     | RAWG API                            |
+| Game deals        | CheapShark API                      |
+| Scheduling        | `@nestjs/schedule`                  |
+| Email             | Nodemailer                          |
+| Local SMTP        | Mailpit                             |
+| API documentation | Swagger / OpenAPI                   |
+| Testing           | Vitest                              |
+| Coverage          | V8                                  |
+| Linting           | Oxlint                              |
+| Formatting        | Prettier                            |
+| Containerization  | Docker / Docker Compose             |
+| CI                | GitHub Actions                      |
 
 The project uses native ESM (`"type": "module"`) and TypeScript `NodeNext` module resolution.
 
@@ -371,34 +385,41 @@ The `(userId, gameId)` pair is unique.
 
 ## 🔐 Roles & Permissions
 
-| Operation | USER | ADMIN |
-| --- | :---: | :---: |
-| Register / login | ✅ | ✅ |
-| Browse catalog | ✅ | ✅ |
-| View game details | ✅ | ✅ |
-| Add/remove games from own library | ✅ | ✅ |
-| Search CheapShark | ✅ | ✅ |
-| View live deals | ✅ | ✅ |
-| Manage own price alerts | ✅ | ✅ |
-| Create catalog games | ❌ | ✅ |
-| Update catalog games | ❌ | ✅ |
-| Delete catalog games | ❌ | ✅ |
-| Search RAWG | ❌ | ✅ |
-| Import RAWG games | ❌ | ✅ |
-| Manually run all price alerts | ❌ | ✅ |
+| Operation                         | USER | ADMIN |
+| --------------------------------- | :--: | :---: |
+| Register / login                  |  ✅  |  ✅   |
+| Browse catalog                    |  ✅  |  ✅   |
+| View game details                 |  ✅  |  ✅   |
+| Add/remove games from own library |  ✅  |  ✅   |
+| Search CheapShark                 |  ✅  |  ✅   |
+| View live deals                   |  ✅  |  ✅   |
+| Manage own price alerts           |  ✅  |  ✅   |
+| Create catalog games              |  ❌  |  ✅   |
+| Update catalog games              |  ❌  |  ✅   |
+| Delete catalog games              |  ❌  |  ✅   |
+| Search RAWG                       |  ❌  |  ✅   |
+| Import RAWG games                 |  ❌  |  ✅   |
+| Manually run all price alerts     |  ❌  |  ✅   |
 
 ---
 
 ## 📡 API Endpoints
 
-Except for registration and login, the API routes below require JWT authentication.
+Except for registration, login, and health checks, the API routes below require JWT authentication.
+
+### Health
+
+````http
+GET /health
+
+This endpoint does not require authentication.
 
 ### Authentication
 
 ```http
 POST /auth/register
 POST /auth/login
-```
+````
 
 Login accepts either username or email through the `identifier` field.
 
@@ -565,13 +586,13 @@ npm run start:dev
 
 Local services:
 
-| Service | Address |
-| --- | --- |
-| API | `http://localhost:3000` |
-| Swagger | `http://localhost:3000/api` |
-| PostgreSQL | `localhost:5432` |
-| Mailpit SMTP | `localhost:1025` |
-| Mailpit inbox | `http://localhost:8025` |
+| Service       | Address                     |
+| ------------- | --------------------------- |
+| API           | `http://localhost:3000`     |
+| Swagger       | `http://localhost:3000/api` |
+| PostgreSQL    | `localhost:5432`            |
+| Mailpit SMTP  | `localhost:1025`            |
+| Mailpit inbox | `http://localhost:8025`     |
 
 ### Default Local Admin
 
@@ -600,30 +621,30 @@ npm run setup:local
 
 ## ⚙️ Environment Variables
 
-| Variable | Purpose | Local example |
-| --- | --- | --- |
-| `DB_HOST` | PostgreSQL host | `localhost` |
-| `DB_PORT` | PostgreSQL port | `5432` |
-| `DB_USER` | PostgreSQL username | `gamelibrary` |
-| `DB_PASSWORD` | PostgreSQL password | `gamelibrary` |
-| `DB_NAME` | PostgreSQL database | `gamelibrary` |
-| `PORT` | API port | `3000` |
-| `NODE_ENV` | Runtime environment | `development` |
-| `JWT_SECRET` | JWT signing secret | local placeholder |
-| `JWT_EXPIRES_IN_SECONDS` | JWT lifetime | `3600` |
-| `RAWG_API_KEY` | RAWG authentication key | user supplied |
-| `RAWG_BASE_URL` | RAWG API base URL | `https://api.rawg.io/api` |
-| `CHEAPSHARK_BASE_URL` | CheapShark API base URL | `https://www.cheapshark.com/api/1.0` |
-| `CHEAPSHARK_USER_AGENT` | User-Agent sent to CheapShark | `GameLibraryAPI/1.0` |
-| `SMTP_HOST` | SMTP host | `localhost` |
-| `SMTP_PORT` | SMTP port | `1025` |
-| `SMTP_SECURE` | Enable secure SMTP transport | `false` |
-| `EMAIL_FROM` | Email sender | `Game Library <no-reply@gamelibrary.local>` |
-| `SMTP_USER` | Optional SMTP username | not required by Mailpit |
-| `SMTP_PASS` | Optional SMTP password | not required by Mailpit |
-| `SEED_ADMIN_USERNAME` | Local admin username | `admin` |
-| `SEED_ADMIN_EMAIL` | Local admin email | `admin@gamelibrary.local` |
-| `SEED_ADMIN_PASSWORD` | Local admin password | development-only value |
+| Variable                 | Purpose                       | Local example                               |
+| ------------------------ | ----------------------------- | ------------------------------------------- |
+| `DB_HOST`                | PostgreSQL host               | `localhost`                                 |
+| `DB_PORT`                | PostgreSQL port               | `5432`                                      |
+| `DB_USER`                | PostgreSQL username           | `gamelibrary`                               |
+| `DB_PASSWORD`            | PostgreSQL password           | `gamelibrary`                               |
+| `DB_NAME`                | PostgreSQL database           | `gamelibrary`                               |
+| `PORT`                   | API port                      | `3000`                                      |
+| `NODE_ENV`               | Runtime environment           | `development`                               |
+| `JWT_SECRET`             | JWT signing secret            | local placeholder                           |
+| `JWT_EXPIRES_IN_SECONDS` | JWT lifetime                  | `3600`                                      |
+| `RAWG_API_KEY`           | RAWG authentication key       | user supplied                               |
+| `RAWG_BASE_URL`          | RAWG API base URL             | `https://api.rawg.io/api`                   |
+| `CHEAPSHARK_BASE_URL`    | CheapShark API base URL       | `https://www.cheapshark.com/api/1.0`        |
+| `CHEAPSHARK_USER_AGENT`  | User-Agent sent to CheapShark | `GameLibraryAPI/1.0`                        |
+| `SMTP_HOST`              | SMTP host                     | `localhost`                                 |
+| `SMTP_PORT`              | SMTP port                     | `1025`                                      |
+| `SMTP_SECURE`            | Enable secure SMTP transport  | `false`                                     |
+| `EMAIL_FROM`             | Email sender                  | `Game Library <no-reply@gamelibrary.local>` |
+| `SMTP_USER`              | Optional SMTP username        | not required by Mailpit                     |
+| `SMTP_PASS`              | Optional SMTP password        | not required by Mailpit                     |
+| `SEED_ADMIN_USERNAME`    | Local admin username          | `admin`                                     |
+| `SEED_ADMIN_EMAIL`       | Local admin email             | `admin@gamelibrary.local`                   |
+| `SEED_ADMIN_PASSWORD`    | Local admin password          | development-only value                      |
 
 Never commit real secrets. `.env` and local environment override files are ignored by Git.
 
@@ -713,12 +734,12 @@ Coverage uses the V8 provider and includes services, guards, strategies, and exc
 
 Minimum CI thresholds:
 
-| Metric | Threshold |
-| --- | ---: |
-| Lines | 75% |
-| Functions | 75% |
-| Branches | 75% |
-| Statements | 75% |
+| Metric     | Threshold |
+| ---------- | --------: |
+| Lines      |       75% |
+| Functions  |       75% |
+| Branches   |       75% |
+| Statements |       75% |
 
 The unit tests mock external systems rather than making real calls to RAWG, CheapShark, SMTP, or the database.
 
@@ -835,21 +856,21 @@ External provider failures are converted into `502 Bad Gateway` responses, while
 
 ## 🔁 NestJS ↔ .NET Concept Mapping
 
-| NestJS / Node.js | Comparable .NET concept |
-| --- | --- |
-| Controller | ASP.NET Core Controller |
-| Provider / Service | Application Service |
-| Dependency Injection | Built-in .NET DI |
-| Repository contract | Repository interface |
-| Injection token | DI service registration |
-| TypeORM Entity | EF Core Entity |
-| TypeORM Migration | EF Core Migration |
-| ConfigService | `IConfiguration` / Options |
-| Guard | Authorization policy / middleware |
-| Exception Filter | Exception filter / middleware |
-| `HttpService` | `HttpClient` |
-| `@Cron()` scheduled service | `BackgroundService` / hosted service |
-| DTO validation decorators | Data Annotations / FluentValidation-style validation |
+| NestJS / Node.js            | Comparable .NET concept                              |
+| --------------------------- | ---------------------------------------------------- |
+| Controller                  | ASP.NET Core Controller                              |
+| Provider / Service          | Application Service                                  |
+| Dependency Injection        | Built-in .NET DI                                     |
+| Repository contract         | Repository interface                                 |
+| Injection token             | DI service registration                              |
+| TypeORM Entity              | EF Core Entity                                       |
+| TypeORM Migration           | EF Core Migration                                    |
+| ConfigService               | `IConfiguration` / Options                           |
+| Guard                       | Authorization policy / middleware                    |
+| Exception Filter            | Exception filter / middleware                        |
+| `HttpService`               | `HttpClient`                                         |
+| `@Cron()` scheduled service | `BackgroundService` / hosted service                 |
+| DTO validation decorators   | Data Annotations / FluentValidation-style validation |
 
 ---
 
@@ -889,21 +910,21 @@ POST /price-alerts/check-now
 
 ## 📜 Useful npm Scripts
 
-| Command | Purpose |
-| --- | --- |
-| `npm run setup:local` | Bootstrap a fresh local environment |
-| `npm run start:dev` | Start NestJS in watch mode |
-| `npm run start:debug` | Start in debug/watch mode |
-| `npm run build` | Compile the application |
-| `npm run start:prod` | Run the compiled application |
-| `npm run lint` | Run Oxlint |
-| `npm run format` | Format source/tests with Prettier |
-| `npm run test:watch` | Run Vitest in watch mode |
-| `npm run test:coverage` | Run tests with coverage |
-| `npm run migration:generate -- ...` | Generate a TypeORM migration |
-| `npm run migration:run` | Apply migrations |
-| `npm run migration:revert` | Revert the latest migration |
-| `npm run seed:admin` | Create/update the local admin |
+| Command                             | Purpose                             |
+| ----------------------------------- | ----------------------------------- |
+| `npm run setup:local`               | Bootstrap a fresh local environment |
+| `npm run start:dev`                 | Start NestJS in watch mode          |
+| `npm run start:debug`               | Start in debug/watch mode           |
+| `npm run build`                     | Compile the application             |
+| `npm run start:prod`                | Run the compiled application        |
+| `npm run lint`                      | Run Oxlint                          |
+| `npm run format`                    | Format source/tests with Prettier   |
+| `npm run test:watch`                | Run Vitest in watch mode            |
+| `npm run test:coverage`             | Run tests with coverage             |
+| `npm run migration:generate -- ...` | Generate a TypeORM migration        |
+| `npm run migration:run`             | Apply migrations                    |
+| `npm run migration:revert`          | Revert the latest migration         |
+| `npm run seed:admin`                | Create/update the local admin       |
 
 ---
 
@@ -913,7 +934,6 @@ POST /price-alerts/check-now
 - forgot/reset-password flow
 - Redis caching for external API responses
 - BullMQ-based background jobs and email processing
-- application health checks
 - structured logging, tracing, and observability
 - API rate limiting
 - comprehensive integration and end-to-end tests

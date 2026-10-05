@@ -11,6 +11,7 @@ import { CheapSharkModule } from './integrations/cheapshark/cheapshark.module.js
 import { PriceAlertsModule } from './price-alerts/price-alerts.module.js';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AppCacheModule } from './cache/app-cache.module.js';
+import { HealthModule } from './health/health.module.js';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { AppCacheModule } from './cache/app-cache.module.js';
     CheapSharkModule,
     PriceAlertsModule,
     AppCacheModule,
+    HealthModule,
   ],
   providers: [
     {
