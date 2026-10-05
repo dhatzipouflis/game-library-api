@@ -10,6 +10,7 @@ import { RawgModule } from './integrations/rawg/rawg.module.js';
 import { CheapSharkModule } from './integrations/cheapshark/cheapshark.module.js';
 import { PriceAlertsModule } from './price-alerts/price-alerts.module.js';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AppCacheModule } from './cache/app-cache.module.js';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     RawgModule,
     CheapSharkModule,
     PriceAlertsModule,
+    AppCacheModule,
   ],
   providers: [
     {

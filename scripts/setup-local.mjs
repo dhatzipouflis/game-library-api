@@ -99,6 +99,35 @@ if (!databaseReady) {
 
 console.log('PostgreSQL is ready.');
 
+console.log('\nWaiting for Redis...');
+
+let redisReady = false;
+
+for (let attempt = 1; attempt <= 30; attempt++) {
+  const result = spawnSync(
+    'docker',
+    ['compose', 'exec', '-T', 'redis', 'redis-cli', 'ping'],
+    {
+      stdio: 'ignore',
+      shell: isWindows,
+    },
+  );
+
+  if (result.status === 0) {
+    redisReady = true;
+
+    break;
+  }
+
+  await wait(2000);
+}
+
+if (!redisReady) {
+  throw new Error('Redis did not become ready in time');
+}
+
+console.log('Redis is ready.');
+
 run('npm', ['run', 'migration:run']);
 
 run('npm', ['run', 'seed:admin']);

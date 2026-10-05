@@ -10,6 +10,10 @@ import { of, throwError } from 'rxjs';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { AppCacheService } from '../src/cache/app-cache.service.js';
+
+import { CACHE_TTL } from '../src/cache/cache.constants.js';
+
 import { RawgService } from '../src/integrations/rawg/rawg.service.js';
 
 describe('RawgService', () => {
@@ -23,8 +27,20 @@ describe('RawgService', () => {
     getOrThrow: vi.fn(),
   };
 
+  const cacheServiceMock = {
+    get: vi.fn(),
+    set: vi.fn(),
+    delete: vi.fn(),
+  };
+
   beforeEach(async () => {
     vi.clearAllMocks();
+
+    cacheServiceMock.get.mockResolvedValue(undefined);
+
+    cacheServiceMock.set.mockResolvedValue(undefined);
+
+    cacheServiceMock.delete.mockResolvedValue(undefined);
 
     configServiceMock.getOrThrow.mockImplementation((key: string) => {
       if (key === 'RAWG_API_KEY') {
@@ -41,13 +57,23 @@ describe('RawgService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RawgService,
+
         {
           provide: HttpService,
+
           useValue: httpServiceMock,
         },
+
         {
           provide: ConfigService,
+
           useValue: configServiceMock,
+        },
+
+        {
+          provide: AppCacheService,
+
+          useValue: cacheServiceMock,
         },
       ],
     }).compile();
@@ -67,76 +93,97 @@ describe('RawgService', () => {
 
   describe('searchGames', () => {
     it('should search RAWG games and map the response', async () => {
-      httpServiceMock.get.mockReturnValue(
-        of({
-          data: {
-            count: 1,
-            next: null,
-            previous: null,
+      const rawgResponse = {
+        count: 1,
+        next: null,
+        previous: null,
 
-            results: [
+        results: [
+          {
+            id: 326243,
+            slug: 'elden-ring',
+            name: 'Elden Ring',
+            released: '2022-02-25',
+
+            background_image: 'https://example.com/elden-ring.jpg',
+
+            metacritic: 96,
+
+            genres: [
               {
-                id: 326243,
-                slug: 'elden-ring',
-                name: 'Elden Ring',
-                released: '2022-02-25',
-                background_image: 'https://example.com/elden-ring.jpg',
-                metacritic: 96,
+                id: 4,
+                name: 'Action',
+                slug: 'action',
+              },
+              {
+                id: 5,
+                name: 'RPG',
+                slug: 'role-playing-games-rpg',
+              },
+            ],
 
-                genres: [
-                  {
-                    id: 4,
-                    name: 'Action',
-                    slug: 'action',
-                  },
-                  {
-                    id: 5,
-                    name: 'RPG',
-                    slug: 'role-playing-games-rpg',
-                  },
-                ],
+            platforms: [
+              {
+                platform: {
+                  id: 4,
+                  name: 'PC',
+                  slug: 'pc',
+                },
+              },
+              {
+                platform: {
+                  id: 187,
+                  name: 'PlayStation 5',
 
-                platforms: [
-                  {
-                    platform: {
-                      id: 4,
-                      name: 'PC',
-                      slug: 'pc',
-                    },
-                  },
-                  {
-                    platform: {
-                      id: 187,
-                      name: 'PlayStation 5',
-                      slug: 'playstation5',
-                    },
-                  },
-                ],
+                  slug: 'playstation5',
+                },
               },
             ],
           },
+        ],
+      };
+
+      httpServiceMock.get.mockReturnValue(
+        of({
+          data: rawgResponse,
         }),
       );
 
       const result = await service.searchGames('Elden Ring');
+
+      expect(cacheServiceMock.get).toHaveBeenCalledWith(
+        'rawg:search:elden ring',
+      );
 
       expect(httpServiceMock.get).toHaveBeenCalledWith(
         'https://api.rawg.io/api/games',
         {
           params: {
             key: 'test-api-key',
+
             search: 'Elden Ring',
+
             page_size: 10,
           },
         },
       );
 
+      expect(cacheServiceMock.set).toHaveBeenCalledWith(
+        'rawg:search:elden ring',
+        rawgResponse,
+        CACHE_TTL.RAWG_SEARCH,
+      );
+
       expect(result).toEqual([
         {
           rawgId: 326243,
+
           title: 'Elden Ring',
+
           released: '2022-02-25',
+
           imageUrl: 'https://example.com/elden-ring.jpg',
+
           metacritic: 96,
 
           genres: ['Action', 'RPG'],
@@ -146,21 +193,100 @@ describe('RawgService', () => {
       ]);
     });
 
+    it('should return cached RAWG search results without calling RAWG', async () => {
+      cacheServiceMock.get.mockResolvedValue({
+        count: 1,
+        next: null,
+        previous: null,
+
+        results: [
+          {
+            id: 326243,
+
+            slug: 'elden-ring',
+
+            name: 'Elden Ring',
+
+            released: '2022-02-25',
+
+            background_image: null,
+
+            metacritic: 96,
+
+            genres: [],
+
+            platforms: [],
+          },
+        ],
+      });
+
+      const result = await service.searchGames('Elden Ring');
+
+      expect(cacheServiceMock.get).toHaveBeenCalledWith(
+        'rawg:search:elden ring',
+      );
+
+      expect(httpServiceMock.get).not.toHaveBeenCalled();
+
+      expect(cacheServiceMock.set).not.toHaveBeenCalled();
+
+      expect(result).toEqual([
+        {
+          rawgId: 326243,
+
+          title: 'Elden Ring',
+
+          released: '2022-02-25',
+
+          imageUrl: null,
+
+          metacritic: 96,
+
+          genres: [],
+
+          platforms: [],
+        },
+      ]);
+    });
+
+    it('should normalize search before creating cache key', async () => {
+      cacheServiceMock.get.mockResolvedValue({
+        count: 0,
+        next: null,
+        previous: null,
+        results: [],
+      });
+
+      await service.searchGames('  ELDEN   RING  ');
+
+      expect(cacheServiceMock.get).toHaveBeenCalledWith(
+        'rawg:search:elden ring',
+      );
+    });
+
     it('should return an empty array when RAWG returns no games', async () => {
+      const rawgResponse = {
+        count: 0,
+        next: null,
+        previous: null,
+        results: [],
+      };
+
       httpServiceMock.get.mockReturnValue(
         of({
-          data: {
-            count: 0,
-            next: null,
-            previous: null,
-            results: [],
-          },
+          data: rawgResponse,
         }),
       );
 
       const result = await service.searchGames('something-that-does-not-exist');
 
       expect(result).toEqual([]);
+
+      expect(cacheServiceMock.set).toHaveBeenCalledWith(
+        'rawg:search:something-that-does-not-exist',
+        rawgResponse,
+        CACHE_TTL.RAWG_SEARCH,
+      );
     });
 
     it('should throw BadGatewayException when RAWG search fails', async () => {
@@ -171,38 +297,49 @@ describe('RawgService', () => {
       await expect(service.searchGames('Elden Ring')).rejects.toThrow(
         BadGatewayException,
       );
+
+      expect(cacheServiceMock.set).not.toHaveBeenCalled();
     });
   });
 
   describe('getGame', () => {
-    it('should return a RAWG game by id', async () => {
-      const rawgGame = {
-        id: 326243,
-        slug: 'elden-ring',
-        name: 'Elden Ring',
-        released: '2022-02-25',
-        background_image: 'https://example.com/elden-ring.jpg',
-        metacritic: 96,
+    const rawgGame = {
+      id: 326243,
 
-        genres: [
-          {
+      slug: 'elden-ring',
+
+      name: 'Elden Ring',
+
+      released: '2022-02-25',
+
+      background_image: 'https://example.com/elden-ring.jpg',
+
+      metacritic: 96,
+
+      genres: [
+        {
+          id: 4,
+
+          name: 'Action',
+
+          slug: 'action',
+        },
+      ],
+
+      platforms: [
+        {
+          platform: {
             id: 4,
-            name: 'Action',
-            slug: 'action',
-          },
-        ],
 
-        platforms: [
-          {
-            platform: {
-              id: 4,
-              name: 'PC',
-              slug: 'pc',
-            },
-          },
-        ],
-      };
+            name: 'PC',
 
+            slug: 'pc',
+          },
+        },
+      ],
+    };
+
+    it('should return a RAWG game by id and cache it', async () => {
       httpServiceMock.get.mockReturnValue(
         of({
           data: rawgGame,
@@ -210,6 +347,8 @@ describe('RawgService', () => {
       );
 
       const result = await service.getGame(326243);
+
+      expect(cacheServiceMock.get).toHaveBeenCalledWith('rawg:game:326243');
 
       expect(httpServiceMock.get).toHaveBeenCalledWith(
         'https://api.rawg.io/api/games/326243',
@@ -219,6 +358,26 @@ describe('RawgService', () => {
           },
         },
       );
+
+      expect(cacheServiceMock.set).toHaveBeenCalledWith(
+        'rawg:game:326243',
+        rawgGame,
+        CACHE_TTL.RAWG_GAME,
+      );
+
+      expect(result).toEqual(rawgGame);
+    });
+
+    it('should return cached RAWG game without calling RAWG', async () => {
+      cacheServiceMock.get.mockResolvedValue(rawgGame);
+
+      const result = await service.getGame(326243);
+
+      expect(cacheServiceMock.get).toHaveBeenCalledWith('rawg:game:326243');
+
+      expect(httpServiceMock.get).not.toHaveBeenCalled();
+
+      expect(cacheServiceMock.set).not.toHaveBeenCalled();
 
       expect(result).toEqual(rawgGame);
     });
@@ -231,6 +390,8 @@ describe('RawgService', () => {
       await expect(service.getGame(326243)).rejects.toThrow(
         BadGatewayException,
       );
+
+      expect(cacheServiceMock.set).not.toHaveBeenCalled();
     });
   });
 });
