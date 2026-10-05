@@ -3,6 +3,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 import type { Cache } from 'cache-manager';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class AppCacheService {
@@ -38,6 +39,28 @@ export class AppCacheService {
       await this.cacheManager.del(key);
     } catch (error) {
       this.logger.warn(`Cache DELETE failed for key "${key}"`);
+    }
+  }
+
+  async isAvailable(): Promise<boolean> {
+    const key = `health:redis:${randomUUID()}`;
+
+    const value = 'ok';
+
+    try {
+      await this.cacheManager.set(key, value, 5_000);
+
+      const cached = await this.cacheManager.get<string>(key);
+
+      try {
+        await this.cacheManager.del(key);
+      } catch {
+        // The health key expires automatically.
+      }
+
+      return cached === value;
+    } catch {
+      return false;
     }
   }
 }

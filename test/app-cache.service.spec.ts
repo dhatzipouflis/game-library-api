@@ -127,4 +127,54 @@ describe('AppCacheService', () => {
       await expect(service.delete('game:1')).resolves.toBeUndefined();
     });
   });
+
+  describe('isAvailable', () => {
+    it('should return true when Redis can store and retrieve a value', async () => {
+      cacheManagerMock.get.mockResolvedValue('ok');
+
+      const result = await service.isAvailable();
+
+      expect(result).toBe(true);
+
+      expect(cacheManagerMock.set).toHaveBeenCalledWith(
+        expect.stringMatching(/^health:redis:/),
+        'ok',
+        5_000,
+      );
+
+      expect(cacheManagerMock.get).toHaveBeenCalledWith(
+        expect.stringMatching(/^health:redis:/),
+      );
+
+      expect(cacheManagerMock.del).toHaveBeenCalledWith(
+        expect.stringMatching(/^health:redis:/),
+      );
+    });
+
+    it('should return false when Redis returns an unexpected value', async () => {
+      cacheManagerMock.get.mockResolvedValue('wrong-value');
+
+      const result = await service.isAvailable();
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false when Redis is unavailable', async () => {
+      cacheManagerMock.set.mockRejectedValue(new Error('Redis unavailable'));
+
+      const result = await service.isAvailable();
+
+      expect(result).toBe(false);
+    });
+
+    it('should still return true when cleanup fails', async () => {
+      cacheManagerMock.get.mockResolvedValue('ok');
+
+      cacheManagerMock.del.mockRejectedValue(new Error('Delete failed'));
+
+      const result = await service.isAvailable();
+
+      expect(result).toBe(true);
+    });
+  });
 });
